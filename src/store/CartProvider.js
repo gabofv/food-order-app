@@ -7,13 +7,58 @@ const initialCartState = {
 };
 
 const cartReducer = (state, action) => {
+    console.log('reducer in action');
     if (action.type === 'ADD_ITEM') {
         // concat instead of push bec we want a new array
-        const updatedItems = state.items.concat(action.newItem);
+        
+        // What if an item already exists, then only update amount
+        //const updatedItems = state.items.concat(action.newItem);
+        
         const updatedTotalAmount = +state.totalAmount + +action.newItem.price * +action.newItem.amount;
+        const existingCartItemIndex = state.items.findIndex(
+            item => item.id === action.newItem.id
+        );
+        const existingCartItem = state.items[existingCartItemIndex];
+        
+        let updatedItems;
+        
+        if (existingCartItem) {
+            const updatedItem = {
+                ...existingCartItem,
+                amount: +existingCartItem.amount + +action.newItem.amount
+            }
+            updatedItems = [...state.items];
+            updatedItems[existingCartItemIndex] = updatedItem;
+        }
+
+        else {
+            updatedItems = state.items.concat(action.newItem);
+        }
+
         return {
             items: updatedItems,
             // Does not heck if an item already exists!
+            totalAmount: updatedTotalAmount
+        };
+    }
+    if (action.type === 'REMOVE_ITEM') {
+        const existingCartItemIndex = state.items.findIndex(
+            item => item.id === action.id
+        );
+        const existingCartItem = state.items[existingCartItemIndex];
+        const updatedTotalAmount = state.totalAmount - existingCartItem.price;
+        let updatedItems;
+        
+        if (+existingCartItem.amount === 1) {
+            updatedItems = state.items.filter(item => item.id !== action.id);
+        }
+        else {
+            const updatedItem = { ...existingCartItem, amount: existingCartItem.amount - 1};
+            updatedItems = [...state.items];
+            updatedItems[existingCartItemIndex] = updatedItem;
+        }
+        return {
+            items: updatedItems,
             totalAmount: updatedTotalAmount
         };
     } 
