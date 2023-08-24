@@ -1,1 +1,1 @@
-Max react course food order app project
+Simple food order app to practice some React.js features
